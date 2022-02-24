@@ -120,7 +120,7 @@ if (SFML_FOUND)
     include_directories(${SFML_INCLUDE_DIR})
 endif()
 
-target_link_libraries(minecraft sfml-audio sfml-network sfml-graphics sfml-window sfml-system)
+target_link_libraries(${CMAKE_PROJECT_NAME} sfml-audio sfml-network sfml-graphics sfml-window sfml-system)
 
 # OpenGL part
 if (APPLE)
