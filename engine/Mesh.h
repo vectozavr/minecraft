@@ -45,14 +45,14 @@ public:
     [[nodiscard]] sf::Color color() const { return _color; }
 
     void setColor(const sf::Color &c);
-
     void setOpacity(double t);
-
     void setVisible(bool visibility) { _visible = visibility; }
 
     [[nodiscard]] bool isVisible() const { return _visible; }
 
     ~Mesh() override;
+
+    Mesh static Cube(ObjectNameTag tag, double size = 1.0);
 
     Mesh static LineTo(ObjectNameTag nameTag, const Vec3D &from, const Vec3D &to, double line_width = 0.1,
                        const sf::Color &color = {150, 150, 150, 100});

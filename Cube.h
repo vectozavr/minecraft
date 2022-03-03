@@ -27,16 +27,16 @@ private:
     Type type;
 public:
     explicit Cube(const Vec3D& pos, Type t) :
-    RigidBody(ObjectNameTag(
-            "cube_X_" + std::to_string((int)pos.x()) +
-                      "_Y_" + std::to_string((int)pos.y()) +
-                      "_Z_" + std::to_string((int)pos.z())),
-              MinecraftConsts::CUBE_OBJ
-                      ), type(t) {
+            RigidBody(Mesh::Cube(ObjectNameTag(
+                    "cube_X_" + std::to_string((int)pos.x()) +
+                    "_Y_" + std::to_string((int)pos.y()) +
+                    "_Z_" + std::to_string((int)pos.z())), 2)
+            ), type(t) {
         setColor(Cube::cubeColor(t));
         translate(pos*2);
         setCollider(true);
     }
+
 
     static sf::Color cubeColor(Type t);
 

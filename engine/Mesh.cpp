@@ -50,6 +50,28 @@ void Mesh::setColor(const sf::Color &c) {
     glFreeFloatArray();
 }
 
+Mesh Mesh::Cube(ObjectNameTag tag, double size) {
+    Mesh cube(std::move(tag));
+
+    cube._tris = {
+            { Vec4D{0.0, 0.0, 0.0, 1.0},    Vec4D{0.0, 1.0, 0.0, 1.0},    Vec4D{1.0, 1.0, 0.0, 1.0} },
+            { Vec4D{0.0, 0.0, 0.0, 1.0},    Vec4D{1.0, 1.0, 0.0, 1.0},    Vec4D{1.0, 0.0, 0.0, 1.0} },
+            { Vec4D{1.0, 0.0, 0.0, 1.0},    Vec4D{1.0, 1.0, 0.0, 1.0},    Vec4D{1.0, 1.0, 1.0, 1.0} },
+            { Vec4D{1.0, 0.0, 0.0, 1.0},    Vec4D{1.0, 1.0, 1.0, 1.0},    Vec4D{1.0, 0.0, 1.0, 1.0} },
+            { Vec4D{1.0, 0.0, 1.0, 1.0},    Vec4D{1.0, 1.0, 1.0, 1.0},    Vec4D{0.0, 1.0, 1.0, 1.0} },
+            { Vec4D{1.0, 0.0, 1.0, 1.0},    Vec4D{0.0, 1.0, 1.0, 1.0},    Vec4D{0.0, 0.0, 1.0, 1.0} },
+            { Vec4D{0.0, 0.0, 1.0, 1.0},    Vec4D{0.0, 1.0, 1.0, 1.0},    Vec4D{0.0, 1.0, 0.0, 1.0} },
+            { Vec4D{0.0, 0.0, 1.0, 1.0},    Vec4D{0.0, 1.0, 0.0, 1.0},    Vec4D{0.0, 0.0, 0.0, 1.0} },
+            { Vec4D{0.0, 1.0, 0.0, 1.0},    Vec4D{0.0, 1.0, 1.0, 1.0},    Vec4D{1.0, 1.0, 1.0, 1.0} },
+            { Vec4D{0.0, 1.0, 0.0, 1.0},    Vec4D{1.0, 1.0, 1.0, 1.0},    Vec4D{1.0, 1.0, 0.0, 1.0} },
+            { Vec4D{1.0, 0.0, 1.0, 1.0},    Vec4D{0.0, 0.0, 1.0, 1.0},    Vec4D{0.0, 0.0, 0.0, 1.0} },
+            { Vec4D{1.0, 0.0, 1.0, 1.0},    Vec4D{0.0, 0.0, 0.0, 1.0},    Vec4D{1.0, 0.0, 0.0, 1.0} },
+    };
+    cube.setColor(sf::Color(255, 245, 180));
+
+    return cube *= Matrix4x4::Scale(Vec3D(size, size, size))*Matrix4x4::Translation(Vec3D(-0.5, -0.5, -0.5));
+}
+
 Mesh
 Mesh::LineTo(ObjectNameTag nameTag, const Vec3D &from, const Vec3D &to, double line_width, const sf::Color &color) {
 
@@ -174,7 +196,9 @@ GLfloat *Mesh::glFloatArray() const {
 
         unsigned stride = 21 * i;
 
-        Triangle triangle = _tris[i];
+        //Triangle triangle = _tris[i];
+        Triangle triangle(_tris[i][0], _tris[i][1], _tris[i][2], _tris[i].color());
+
         Vec3D norm = (model()*triangle.norm()).normalized();
         float dot = static_cast<float>(norm.dot(Vec3D(0, 1, 2).normalized()));
 
