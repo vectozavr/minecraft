@@ -6,8 +6,8 @@
 #include "engine/utils/Log.h"
 
 Player::Player(const ObjectNameTag& nameTag, const std::string &filename, const Vec3D &scale) :
-RigidBody(ObjectNameTag(nameTag), filename, scale) {
-    setAcceleration(Vec3D{0, -MinecraftConsts::GRAVITY, 0});
+RigidBody(ObjectNameTag(nameTag), filename, scale*MinecraftConsts::WORLD_SCALE/2) {
+    setAcceleration(Vec3D{0, -MinecraftConsts::GRAVITY*MinecraftConsts::WORLD_SCALE, 0});
     setCollision(true);
     setVisible(false);
     setColor({240, 168, 168});

@@ -20,7 +20,7 @@ private:
 public:
     explicit Player(const ObjectNameTag& nameTag,
                     const std::string &filename = "obj/cube.obj",
-                    const Vec3D &scale = Vec3D{0.5, 1.4, 0.5});
+                    const Vec3D &scale = Vec3D(0.6, 1.8, 0.6));
 
     // This is for situation when you want to store the position of the head but you dont have attached camera
     void setHeadAngle(double a) { _headAngle = a; }

@@ -13,54 +13,28 @@ PlayerController::PlayerController(std::shared_ptr<Player> player,
 }
 
 void PlayerController::update() {
-    bool inRunning_old = _inRunning;
-    _inRunning = Keyboard::isKeyPressed(sf::Keyboard::A) || Keyboard::isKeyPressed(sf::Keyboard::D) || Keyboard::isKeyPressed(sf::Keyboard::W) || Keyboard::isKeyPressed(sf::Keyboard::S);
-
     auto camera = _player->attached(ObjectNameTag("Camera"));
     // in case when the camera is attached we make some animation during running
-    if(_inRunning && camera != nullptr) {
-        if (!Timeline::isInAnimList(AnimationListTag("camera_hor_oscil"))) {
-            Timeline::addAnimation<ATranslate>(AnimationListTag("camera_hor_oscil"), camera, -camera->left() / 3, 0.3, Animation::LoopOut::None, Animation::InterpolationType::Cos);
-            Timeline::addAnimation<AWait>(AnimationListTag("camera_hor_oscil"), 0);
-            Timeline::addAnimation<ATranslate>(AnimationListTag("camera_hor_oscil"), camera,  camera->left() / 3, 0.3, Animation::LoopOut::None, Animation::InterpolationType::Cos);
 
-            Timeline::addAnimation<ATranslate>(AnimationListTag("camera_vert_oscil"), camera, -Vec3D{0, 1, 0} / 6, 0.15, Animation::LoopOut::None, Animation::InterpolationType::Cos);
-            Timeline::addAnimation<AWait>(AnimationListTag("camera_vert_oscil"), 0);
-            Timeline::addAnimation<ATranslate>(AnimationListTag("camera_vert_oscil"), camera, Vec3D{0, 1, 0} / 6, 0.15, Animation::LoopOut::None, Animation::InterpolationType::Cos);
-            Timeline::addAnimation<AWait>(AnimationListTag("camera_vert_oscil"), 0);
-            Timeline::addAnimation<ATranslate>(AnimationListTag("camera_vert_oscil"), camera, -Vec3D{0, 1, 0} / 6, 0.15, Animation::LoopOut::None, Animation::InterpolationType::Cos);
-            Timeline::addAnimation<AWait>(AnimationListTag("camera_vert_oscil"), 0);
-            Timeline::addAnimation<ATranslate>(AnimationListTag("camera_vert_oscil"), camera, Vec3D{0, 1, 0} / 6, 0.15, Animation::LoopOut::None, Animation::InterpolationType::Cos);
-
-            Timeline::addAnimation<ATranslateToPoint>(AnimationListTag("camera_init"), camera, _player->position() + Vec3D{0, 1.8, 0}, 0.3, Animation::LoopOut::None, Animation::InterpolationType::Cos);
-        }
-
-    } else if(inRunning_old && !_inRunning && camera != nullptr) {
-        Timeline::deleteAnimationList(AnimationListTag("camera_hor_oscil"));
-        Timeline::deleteAnimationList(AnimationListTag("camera_vert_oscil"));
-        Timeline::addAnimation<ATranslateToPoint>(AnimationListTag("camera_init"), camera, _player->position() + Vec3D{0, 1.8, 0}, 0.15, Animation::LoopOut::None, Animation::InterpolationType::Cos);
+    // Left and right movement
+    if(Keyboard::isKeyPressed(sf::Keyboard::A)) {
+        _player->translate(_player->left()*Time::deltaTime()*MinecraftConsts::WALK_SPEED*MinecraftConsts::WORLD_SCALE);
+    }
+    if(Keyboard::isKeyPressed(sf::Keyboard::D)) {
+        _player->translate(-_player->left()*Time::deltaTime()*MinecraftConsts::WALK_SPEED*MinecraftConsts::WORLD_SCALE);
     }
 
-    // Left and right
-    if (Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        _player->translate(_player->left() * Time::deltaTime() * MinecraftConsts::WALK_SPEED);
+    // Forward and backward movement
+    if(Keyboard::isKeyPressed(sf::Keyboard::W)) {
+        _player->translate(_player->lookAt()*Time::deltaTime()*MinecraftConsts::WALK_SPEED*MinecraftConsts::WORLD_SCALE);
+    }
+    if(Keyboard::isKeyPressed(sf::Keyboard::S)) {
+        _player->translate(-_player->lookAt()*Time::deltaTime()*MinecraftConsts::WALK_SPEED*MinecraftConsts::WORLD_SCALE);
     }
 
-    if (Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        _player->translate(-_player->left() * Time::deltaTime() * MinecraftConsts::WALK_SPEED);
-    }
-
-    // Forward and backward
-    if (Keyboard::isKeyPressed(sf::Keyboard::W)) {
-        _player->translate(_player->left().cross(Vec3D{0, 1, 0}) * Time::deltaTime() * MinecraftConsts::WALK_SPEED);
-    }
-
-    if (Keyboard::isKeyPressed(sf::Keyboard::S)) {
-        _player->translate(-_player->left().cross(Vec3D{0, 1, 0}) * Time::deltaTime() * MinecraftConsts::WALK_SPEED);
-    }
-
-    if (Keyboard::isKeyPressed(sf::Keyboard::Space) && _player->inCollision()) {
-        _player->setVelocity(Vec3D{0, sqrt(2 * -_player->acceleration().y() * MinecraftConsts::JUMP_HEIGHT), 0});
+    // Jump
+    if(Keyboard::isKeyPressed(sf::Keyboard::Space) && _player->inCollision()) {
+        _player->setVelocity(Vec3D(0, sqrt(2*MinecraftConsts::GRAVITY*MinecraftConsts::JUMP_HEIGHT), 0)*MinecraftConsts::WORLD_SCALE);
     }
 
     // Mouse movement
@@ -112,11 +86,40 @@ void PlayerController::update() {
         int soundNum = round((double) rand() / RAND_MAX * 5) + 1;
         SoundController::loadAndPlay(SoundTag("steps"), "sound/stonestep" + std::to_string(soundNum) + ".ogg");
     }
-    if ((_oldVelocity - _player->velocity()).abs() > 30) {
+    if ((_oldVelocity - _player->velocity()).abs() > 30*MinecraftConsts::WORLD_SCALE) {
         SoundController::loadAndPlay(SoundTag("fallbig"), "sound/fallbig.ogg");
     }
 
+    animateCameraMotion();
+
     _oldVelocity = _player->velocity();
+}
+
+void PlayerController::animateCameraMotion() {
+    bool inRunningOld = _inRunning;
+    _inRunning = Keyboard::isKeyPressed(sf::Keyboard::A) || Keyboard::isKeyPressed(sf::Keyboard::D) || Keyboard::isKeyPressed(sf::Keyboard::W) || Keyboard::isKeyPressed(sf::Keyboard::S);
+    auto camera = _player->attached(ObjectNameTag("Camera"));
+
+    if(_inRunning) {
+        Timeline::addAnimation<ATranslate>(AnimationListTag("h"), camera, -camera->left()*MinecraftConsts::WORLD_SCALE/3, 0.3, Animation::LoopOut::None, Animation::InterpolationType::Cos);
+        Timeline::addAnimation<AWait>(AnimationListTag("h"), 0);
+        Timeline::addAnimation<ATranslate>(AnimationListTag("h"), camera, camera->left()*MinecraftConsts::WORLD_SCALE/3, 0.3, Animation::LoopOut::None, Animation::InterpolationType::Cos);
+        Timeline::addAnimation<AWait>(AnimationListTag("h"), 0);
+
+        Timeline::addAnimation<ATranslate>(AnimationListTag("v"), camera, -_player->up()*MinecraftConsts::WORLD_SCALE/6, 0.15, Animation::LoopOut::None, Animation::InterpolationType::Cos);
+        Timeline::addAnimation<AWait>(AnimationListTag("v"), 0);
+        Timeline::addAnimation<ATranslate>(AnimationListTag("v"), camera, _player->up()*MinecraftConsts::WORLD_SCALE/6, 0.15, Animation::LoopOut::None, Animation::InterpolationType::Cos);
+        Timeline::addAnimation<AWait>(AnimationListTag("v"), 0);
+        Timeline::addAnimation<ATranslate>(AnimationListTag("v"), camera, -_player->up()*MinecraftConsts::WORLD_SCALE/6, 0.15, Animation::LoopOut::None, Animation::InterpolationType::Cos);
+        Timeline::addAnimation<AWait>(AnimationListTag("v"), 0);
+        Timeline::addAnimation<ATranslate>(AnimationListTag("v"), camera, _player->up()*MinecraftConsts::WORLD_SCALE/6, 0.15, Animation::LoopOut::None, Animation::InterpolationType::Cos);
+        Timeline::addAnimation<AWait>(AnimationListTag("v"), 0);
+    } else if(!_inRunning && inRunningOld) {
+        Timeline::deleteAnimationList(AnimationListTag("h"));
+        Timeline::deleteAnimationList(AnimationListTag("v"));
+
+        Timeline::addAnimation<ATranslateToPoint>(camera, _player->position() + Vec3D(0, 0.8, 0)*MinecraftConsts::WORLD_SCALE, 0.3);
+    }
 }
 
 void PlayerController::setAddCubeCallBack(std::function<void()> addCube) {

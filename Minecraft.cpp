@@ -71,7 +71,7 @@ void Minecraft::start() {
 
     camera->translateToPoint(player->position() + Vec3D{0, 1.8, 0});
     player->attach(camera);
-    player->translateToPoint(Vec3D{0, 6, 0});
+    player->translateToPoint(Vec3D{0, 2, 0}*MinecraftConsts::WORLD_SCALE);
 
     world->loadBody(ObjectNameTag("cube_in_hand"), MinecraftConsts::CUBE_OBJ);
     auto cube_in_hand = world->body(ObjectNameTag("cube_in_hand"));
@@ -245,10 +245,10 @@ void Minecraft::removePlayer(sf::Uint16 id) {
 }
 
 void Minecraft::addCube() {
-    auto rayCast = world->rayCast(camera->position(), camera->position() + camera->lookAt() * 10, "Player");
-    if ((rayCast.pointOfIntersection - camera->position()).abs() < 10) {
-        Vec3D cubePoint = rayCast.intersectedTriangle.position() + rayCast.intersectedTriangle.norm();
-        Vec3D pos = Vec3D(round(cubePoint.x() / 2), round(cubePoint.y() / 2), round(cubePoint.z() / 2));
+    auto rayCast = world->rayCast(camera->position(), camera->position() + camera->lookAt(), "Player");
+    if ((rayCast.pointOfIntersection - camera->position()).abs() < MinecraftConsts::REACH_RANGE*MinecraftConsts::WORLD_SCALE) {
+        Vec3D cubePoint = rayCast.intersectedTriangle.position() + rayCast.intersectedTriangle.norm()*MinecraftConsts::WORLD_SCALE/2;
+        Vec3D pos = Vec3D(round(cubePoint.x() / MinecraftConsts::WORLD_SCALE), round(cubePoint.y() / MinecraftConsts::WORLD_SCALE), round(cubePoint.z() / MinecraftConsts::WORLD_SCALE));
 
         map->addCube(pos, player->selectedBlock());
 
@@ -257,10 +257,10 @@ void Minecraft::addCube() {
 }
 
 Cube::Type Minecraft::removeCube() {
-    auto rayCast = world->rayCast(camera->position(), camera->position() + camera->lookAt() * 10, "Player");
-    if ((rayCast.pointOfIntersection - camera->position()).abs() < 10) {
-        Vec3D cubePoint = rayCast.intersectedTriangle.position() - rayCast.intersectedTriangle.norm();
-        Vec3D pos = Vec3D(round(cubePoint.x() / 2), round(cubePoint.y() / 2), round(cubePoint.z() / 2));
+    auto rayCast = world->rayCast(camera->position(), camera->position() + camera->lookAt(), "Player");
+    if ((rayCast.pointOfIntersection - camera->position()).abs() < MinecraftConsts::REACH_RANGE*MinecraftConsts::WORLD_SCALE) {
+        Vec3D cubePoint = rayCast.intersectedTriangle.position() - rayCast.intersectedTriangle.norm()*MinecraftConsts::WORLD_SCALE/2;
+        Vec3D pos = Vec3D(round(cubePoint.x() / MinecraftConsts::WORLD_SCALE), round(cubePoint.y() / MinecraftConsts::WORLD_SCALE), round(cubePoint.z() / MinecraftConsts::WORLD_SCALE));
 
         Cube::Type t = map->removeCube(pos);
 

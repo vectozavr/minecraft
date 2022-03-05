@@ -30,10 +30,10 @@ public:
             RigidBody(Mesh::Cube(ObjectNameTag(
                     "cube_X_" + std::to_string((int)pos.x()) +
                     "_Y_" + std::to_string((int)pos.y()) +
-                    "_Z_" + std::to_string((int)pos.z())), 2)
+                    "_Z_" + std::to_string((int)pos.z())), MinecraftConsts::WORLD_SCALE)
             ), type(t) {
         setColor(Cube::cubeColor(t));
-        translate(pos*2);
+        translate(pos*MinecraftConsts::WORLD_SCALE);
         setCollider(true);
     }
 
